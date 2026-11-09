@@ -81,12 +81,12 @@ app.all("/api/log-access", netlifyAdapter(logAccess.handler));
 app.all("/api/consulta.php", netlifyAdapter(consulta.handler));
 
 // ---------------------------------------------------------------------------
-// PAINEL /admin — build do Vite em admin-dist/ (npm run build:admin)
+// PAINEL /admin — build do Vite em dist/ (npm run build)
 //
 // Vem ANTES do SPA fallback: senão o fallback de SPA do funil engoliria
 // /admin e devolveria o index.html da oferta no lugar do painel.
 // ---------------------------------------------------------------------------
-const ADMIN_DIST = path.join(ROOT, "admin-dist");
+const ADMIN_DIST = path.join(ROOT, "dist");
 
 app.use("/admin/assets", express.static(path.join(ADMIN_DIST, "assets")));
 

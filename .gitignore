@@ -5,8 +5,8 @@
 
 node_modules/
 
-# Build do painel (gerado por `npm run build:admin`)
-admin-dist/
+# Build do painel (gerado por `npm run build`)
+dist/
 
 # Netlify/Vercel locais
 .netlify/

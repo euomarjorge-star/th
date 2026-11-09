@@ -9,7 +9,11 @@ import { resolve } from 'node:path';
  * `index.html` da raiz é dele. Por isso a entrada deste build é `admin.html`:
  * apontar o Vite para a raiz faria ele tentar reprocessar o funil inteiro.
  *
- * A saída vai para `admin-dist/`, que o server.js serve em `/admin`.
+ * A saída vai para `dist/`, que o server.js serve em `/admin`. Chama-se
+ * `dist` (e não `admin-dist`) porque o Vercel, sem framework declarado,
+ * sempre procura por esse nome como Output Directory — e as configurações
+ * manuais do dashboard do projeto insistiam em sobrescrever qualquer outro
+ * valor vindo do vercel.json.
  * Em produção (Netlify/Vercel) o mesmo diretório é publicado nessa rota.
  *
  * A tela chama `/api/admin/...` na MESMA origem — sem CORS, sem
@@ -19,7 +23,7 @@ export default defineConfig({
   plugins: [react()],
   base: '/admin/',
   build: {
-    outDir: 'admin-dist',
+    outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
       input: resolve(__dirname, 'admin.html'),
