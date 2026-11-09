@@ -7,7 +7,7 @@
     "start": "node server.js",
     "build:admin": "vite build",
     "dev:admin": "vite",
-    "build": "vite build"
+    "build": "node scripts/build.js"
   },
   "dependencies": {
     "dotenv": "^16.6.1",

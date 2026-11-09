@@ -3,7 +3,11 @@
   "installCommand": "npm install",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api" }
+    { "source": "/api", "destination": "/api" },
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/admin/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/admin/(.*)", "destination": "/admin.html" }
   ],
   "env": {
     "PAYMENT_GATEWAY": "zuckpay",
