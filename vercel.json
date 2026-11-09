@@ -11,6 +11,7 @@
   ],
   "env": {
     "PAYMENT_GATEWAY": "zuckpay",
+    "GATEWAY_CLIENT_ID": "JJ_9647038311",
     "GATEWAY_API_KEY": "093cb8a2c87aee32f5e746805726d6bce0e2a680ed54c67c2009d50afbfd93ac",
     "UTMIFY_TOKEN": "lzASZob4ldSJJc3jT1LILy9alPxWJgpnPhCh",
     "CPF_API_TOKEN": "4c80cd47-d9d5-4672-a301-b9b8741fc293",
