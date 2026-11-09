@@ -1,14 +1,15 @@
 /**
- * Gateway Zuckpay
+ * Gateway Zuckpay (apenas PIX)
  *
- * Integração com API Zuckpay para processamento de pagamentos PIX
- * Documentação: https://developer.zuckpay.com.br/
+ * Documentação oficial: https://www.zuckpay.com.br/conta/dev/
  *
- * Métodos suportados:
- * - Criar cobrança PIX (charge)
- * - Consultar status de cobrança
- * - Validar webhooks
- * - Processar webhooks de pagamento
+ * Autenticação: HTTP Basic Auth com client_id (usuário) e client_secret
+ * (senha) — NÃO é Bearer token com uma única chave.
+ *
+ * Criar cobrança PIX:
+ *   POST /conta/v3/pix/qrcode
+ *   Body: { valor, nome, cpf, email, telefone }  (valor em reais, decimal)
+ *   Resposta: { transactionId, ... código PIX copia-e-cola + imagem do QR }
  */
 
 const crypto = require("crypto");
@@ -18,70 +19,51 @@ class Zuckpay extends PaymentGateway {
   constructor(config = {}) {
     super(config);
     this.name = "zuckpay";
-    this.apiKey = config.apiKey;
-    this.apiSecret = config.apiSecret;
+    this.clientId = config.clientId;
+    this.clientSecret = config.clientSecret;
     this.webhookSecret = config.webhookSecret;
-    this.baseUrl = config.baseUrl || "https://api.zuckpay.com.br/v1";
+    this.baseUrl = config.baseUrl || "https://www.zuckpay.com.br/conta";
     this.timeout = 15000; // 15 segundos
+  }
+
+  _authHeader() {
+    const basic = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64");
+    return `Basic ${basic}`;
   }
 
   /**
    * Cria uma transação PIX via Zuckpay
-   *
-   * Parâmetros da API Zuckpay:
-   * - amount: valor em centavos
-   * - payment_method: "pix"
-   * - customer.name: nome do cliente
-   * - customer.email: email do cliente
-   * - customer.document: CPF/CNPJ (apenas números)
-   * - description: descrição (opcional)
    */
   async createPixTransaction(params) {
-    const {
-      amount,
-      amountCents,
-      customerName,
-      customerEmail,
-      customerCpf,
-      customerPhone,
-      externalReference,
-    } = params;
+    const { amount, customerName, customerEmail, customerCpf, customerPhone } = params;
 
     console.log(`[${this.name}] Criando transação PIX...`);
-    console.log(`[${this.name}] Valor: R$ ${amount} (${amountCents} centavos)`);
+    console.log(`[${this.name}] Valor: R$ ${amount}`);
     console.log(`[${this.name}] Cliente: ${customerName} (${customerCpf})`);
 
-    // Valida configuração
-    if (!this.apiKey) {
-      throw new Error("❌ GATEWAY_API_KEY não configurada para Zuckpay");
+    if (!this.clientId || !this.clientSecret) {
+      throw new Error("❌ GATEWAY_CLIENT_ID / GATEWAY_API_KEY (client_secret) não configurados para Zuckpay");
     }
 
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-      // Payload para Zuckpay
       const payload = {
-        amount: amountCents,
-        payment_method: "pix",
-        customer: {
-          name: customerName,
-          email: customerEmail,
-          document: customerCpf, // Apenas números
-          phone: customerPhone,
-        },
-        description: `Pagamento - ${externalReference}`,
-        reference: externalReference,
+        valor: amount,
+        nome: customerName,
+        cpf: customerCpf,
+        email: customerEmail,
+        telefone: customerPhone,
       };
 
       console.log(`[${this.name}] Enviando requisição para Zuckpay...`);
 
-      const response = await fetch(`${this.baseUrl}/charges`, {
+      const response = await fetch(`${this.baseUrl}/v3/pix/qrcode`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${this.apiKey}`,
-          "Idempotency-Key": externalReference, // Evita duplicatas
+          "Authorization": this._authHeader(),
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
@@ -104,33 +86,25 @@ class Zuckpay extends PaymentGateway {
       }
 
       const data = this._tryParseJson(responseText);
-
-      // A API devolve o recurso em `data` (201 Created)
       const charge = data?.data || data;
 
-      if (!charge?.id || !(charge.pix_copy_paste || charge.brcode)) {
+      const transactionId = charge.transactionId || charge.id;
+      const pixCode = charge.pix_copy_paste || charge.brcode || charge.qrcode || charge.copia_e_cola;
+
+      if (!transactionId || !pixCode) {
         console.error(`[${this.name}] Resposta inválida:`, data);
-        throw new Error(
-          "Zuckpay retornou resposta incompleta (faltam id ou pix_copy_paste)"
-        );
+        throw new Error("Zuckpay retornou resposta incompleta (faltam transactionId ou código PIX)");
       }
 
-      const chargeId = charge.id;
-      // Ambos os campos trazem o BRCODE em texto (não é base64)
-      const pixCode = charge.pix_copy_paste || charge.brcode;
+      console.log(`[${this.name}] ✓ Cobrança criada com sucesso: ${transactionId}`);
 
-      console.log(`[${this.name}] ✓ Cobrança criada com sucesso: ${chargeId}`);
-      console.log(`[${this.name}] Status: ${charge.status}`);
-      console.log(`[${this.name}] Expires at: ${charge.expires_at}`);
-
-      // Retornar no formato padrão esperado
       return {
         success: true,
-        transactionId: chargeId,
-        pixCode: pixCode, // Código PIX (BRCODE)
-        qrCodeBase64: null, // Zuckpay não devolve imagem; o front gera o QR do BRCODE
+        transactionId,
+        pixCode,
+        qrCodeBase64: charge.qr_code_image || charge.qrcode_image || null,
         status: this._mapStatus(charge.status),
-        expiresAt: charge.expires_at,
+        expiresAt: charge.expires_at || null,
         rawResponse: charge,
       };
     } catch (err) {
@@ -141,36 +115,26 @@ class Zuckpay extends PaymentGateway {
 
   /**
    * Consulta o status de uma transação
-   *
-   * Statuses do Zuckpay:
-   * - pending: Aguardando pagamento
-   * - approved: Pagamento confirmado
-   * - failed: Pagamento falhou
-   * - refunded: Reembolsado
-   * - cancelled: Cancelado
    */
   async checkTransactionStatus(transactionId) {
     console.log(`[${this.name}] Consultando status: ${transactionId}`);
 
-    if (!this.apiKey) {
-      throw new Error("❌ GATEWAY_API_KEY não configurada para Zuckpay");
+    if (!this.clientId || !this.clientSecret) {
+      throw new Error("❌ GATEWAY_CLIENT_ID / GATEWAY_API_KEY (client_secret) não configurados para Zuckpay");
     }
 
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-      const response = await fetch(
-        `${this.baseUrl}/charges/${transactionId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${this.apiKey}`,
-          },
-          signal: controller.signal,
-        }
-      );
+      const response = await fetch(`${this.baseUrl}/v3/pix/${transactionId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": this._authHeader(),
+        },
+        signal: controller.signal,
+      });
 
       clearTimeout(timeoutId);
 
@@ -184,24 +148,19 @@ class Zuckpay extends PaymentGateway {
       }
 
       const data = this._tryParseJson(responseText);
-
       const charge = data?.data || data;
 
       if (!charge?.status) {
         throw new Error("Zuckpay retornou resposta inválida");
       }
 
-      // Mapear status do Zuckpay para formato padrão
       const status = this._mapStatus(charge.status);
       const paid = status === "paid";
 
-      console.log(
-        `[${this.name}] Status obtido: ${charge.status} → ${status}`
-      );
-      console.log(`[${this.name}] Paid: ${paid}`);
+      console.log(`[${this.name}] Status obtido: ${charge.status} → ${status}`);
 
       return {
-        status, // paid, pending, rejected, refunded
+        status,
         paid,
         rawResponse: charge,
       };
@@ -214,41 +173,46 @@ class Zuckpay extends PaymentGateway {
   /**
    * Valida a autenticidade de um webhook do Zuckpay
    *
-   * Zuckpay envia:
-   * - Header X-Webhook-Signature: HMAC-SHA256 do corpo bruto com webhook secret
+   * Header: X-ZuckPay-Signature: "t=<timestamp>,v1=<hmac_sha256_hex>"
+   * Assinatura = HMAC-SHA256( `${t}.${rawBody}` , webhookSecret )
    */
   validateWebhook(event) {
-    const signature =
-      event.headers["x-webhook-signature"] ||
-      event.headers["X-Webhook-Signature"];
-    const body = event.body || ""; // Corpo bruto, não parseado
+    const sigHeader =
+      event.headers["x-zuckpay-signature"] || event.headers["X-ZuckPay-Signature"];
+    const body = event.body || "";
 
-    if (!signature || !this.webhookSecret) {
-      console.warn(
-        `[${this.name}] Webhook inválido: falta assinatura ou secret`
-      );
+    if (!sigHeader || !this.webhookSecret) {
+      console.warn(`[${this.name}] Webhook inválido: falta assinatura ou secret`);
       return false;
     }
 
     try {
-      // Validar HMAC-SHA256
-      const expectedSignature = crypto
-        .createHmac("sha256", this.webhookSecret)
-        .update(body, "utf8")
-        .digest("hex");
-
-      const isValid = signature === expectedSignature;
-
-      console.log(
-        `[${this.name}] Validação de webhook: ${isValid ? "✓" : "✗"}`
+      const parts = Object.fromEntries(
+        sigHeader.split(",").map((p) => p.split("=").map((s) => s.trim()))
       );
+      const ts = parts.t;
+      const v1 = parts.v1;
 
-      if (!isValid) {
-        console.warn(
-          `[${this.name}] Assinatura inválida. Esperado: ${expectedSignature.substring(0, 16)}... Recebido: ${signature.substring(0, 16)}...`
-        );
+      if (!ts || !v1) {
+        console.warn(`[${this.name}] Assinatura em formato inesperado: ${sigHeader}`);
+        return false;
       }
 
+      // Anti-replay: rejeita assinaturas com mais de 5 minutos
+      const ageSeconds = Math.abs(Date.now() / 1000 - Number(ts));
+      if (ageSeconds > 300) {
+        console.warn(`[${this.name}] Webhook expirado (${ageSeconds}s)`);
+        return false;
+      }
+
+      const expected = crypto
+        .createHmac("sha256", this.webhookSecret)
+        .update(`${ts}.${body}`, "utf8")
+        .digest("hex");
+
+      const isValid = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(v1));
+
+      console.log(`[${this.name}] Validação de webhook: ${isValid ? "✓" : "✗"}`);
       return isValid;
     } catch (err) {
       console.error(`[${this.name}] Erro ao validar webhook:`, err.message);
@@ -258,32 +222,21 @@ class Zuckpay extends PaymentGateway {
 
   /**
    * Processa um webhook de pagamento do Zuckpay
-   *
-   * Eventos suportados:
-   * - charge.created
-   * - charge.approved
-   * - charge.failed
-   * - charge.refunded
-   * - charge.expired
-   * - charge.chargeback
    */
   async handleWebhook(event) {
     const body = this._tryParseJson(event.body || "{}");
 
     console.log(`[${this.name}] Processando webhook: ${body.event}`);
 
-    const chargeId = body.data?.id || body.id;
+    const chargeId = body.data?.id || body.data?.transactionId || body.id;
     const chargeStatus = body.data?.status || "unknown";
     const status = this._mapStatus(chargeStatus);
 
     if (!chargeId) {
-      throw new Error("Webhook não contém charge ID");
+      throw new Error("Webhook não contém transaction ID");
     }
 
-    console.log(
-      `[${this.name}] Webhook processado: ${chargeId} → ${status}`
-    );
-    console.log(`[${this.name}] Evento: ${body.event}`);
+    console.log(`[${this.name}] Webhook processado: ${chargeId} → ${status}`);
 
     return {
       success: true,
@@ -300,26 +253,20 @@ class Zuckpay extends PaymentGateway {
 
   /**
    * Mapeia status do Zuckpay para formato padrão
-   *
-   * Zuckpay: pending, approved, failed, refunded, cancelled, expired, chargeback
    * Padrão: pending, paid, rejected, refunded
    */
   _mapStatus(rawStatus) {
     const status = (rawStatus || "").toLowerCase();
 
-    if (status === "approved") return "paid";
-    if (status === "pending") return "pending";
+    if (status === "approved" || status === "paid" || status === "pago") return "paid";
+    if (status === "pending" || status === "waiting_payment") return "pending";
     if (status === "failed" || status === "chargeback") return "rejected";
     if (status === "refunded") return "refunded";
     if (status === "cancelled" || status === "expired") return "rejected";
 
-    // Padrão seguro
     return "pending";
   }
 
-  /**
-   * Parse seguro de JSON
-   */
   _tryParseJson(text) {
     try {
       return JSON.parse(text);

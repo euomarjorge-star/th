@@ -40,8 +40,13 @@ function getGateway() {
   }
 
   return new GatewayClass({
+    // Zuckpay usa client_id/client_secret (Basic Auth); outros gateways
+    // (ex.: GorillaPay) usam apiKey/apiSecret. Passamos os dois pares —
+    // cada gateway lê só os campos que usa.
     apiKey: credentials.GATEWAY_API_KEY,
     apiSecret: credentials.GATEWAY_API_SECRET,
+    clientId: credentials.GATEWAY_CLIENT_ID,
+    clientSecret: credentials.GATEWAY_API_KEY,
     webhookSecret: credentials.GATEWAY_WEBHOOK_SECRET,
   });
 }

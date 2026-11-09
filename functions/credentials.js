@@ -12,7 +12,11 @@
 
 module.exports = {
   // Gateway de pagamentos
+  // Zuckpay autentica com Basic Auth: client_id (usuário) + client_secret
+  // (senha). GATEWAY_API_KEY guarda o client_secret; falta o client_id —
+  // pegue em https://www.zuckpay.com.br/conta/dev/ e preencha abaixo.
   PAYMENT_GATEWAY: process.env.PAYMENT_GATEWAY || "zuckpay",
+  GATEWAY_CLIENT_ID: process.env.GATEWAY_CLIENT_ID || "",
   GATEWAY_API_KEY: process.env.GATEWAY_API_KEY || "093cb8a2c87aee32f5e746805726d6bce0e2a680ed54c67c2009d50afbfd93ac",
   GATEWAY_API_SECRET: process.env.GATEWAY_API_SECRET || "",
   GATEWAY_WEBHOOK_SECRET: process.env.GATEWAY_WEBHOOK_SECRET || "",
