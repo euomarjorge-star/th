@@ -35,7 +35,14 @@ class Zuckpay extends PaymentGateway {
    * Cria uma transação PIX via Zuckpay
    */
   async createPixTransaction(params) {
-    const { amount, customerName, customerEmail, customerCpf, customerPhone } = params;
+    const {
+      amount,
+      customerName,
+      customerEmail,
+      customerCpf,
+      customerPhone,
+      productName,
+    } = params;
 
     console.log(`[${this.name}] Criando transação PIX...`);
     console.log(`[${this.name}] Valor: R$ ${amount}`);
@@ -56,6 +63,7 @@ class Zuckpay extends PaymentGateway {
         email: customerEmail,
         telefone: customerPhone,
       };
+      if (productName) payload.descricao = productName;
 
       console.log(`[${this.name}] Enviando requisição para Zuckpay...`);
 

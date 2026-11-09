@@ -193,6 +193,7 @@ exports.handler = async (event) => {
       customerCpf,
       customerPhone,
       externalReference: reference,
+      productName: "Orações Sagradas",
     });
 
     const transactionId = gatewayResponse.transactionId;
