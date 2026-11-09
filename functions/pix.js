@@ -162,7 +162,7 @@ exports.handler = async (event) => {
   const randId = Math.random().toString(36).slice(2, 10);
 
   // Calcula o amount baseado na requisição
-  let amountReais = 67.70; // Valor padrão
+  let amountReais = 119.67; // Valor padrão
   const rawAmount = body.amount ?? body.valor ?? body.total;
   if (rawAmount) {
     const n = Number(rawAmount);

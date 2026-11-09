@@ -54,7 +54,7 @@ Redireciona para página de sucesso
 
 ## 💰 Valores Configurados
 
-- **Padrão:** R$ 67,70
+- **Padrão:** R$ 119,67
 - **Upsell:** R$ 81,50 (quando requisição tem valor entre R$ 70-90)
 
 ---
