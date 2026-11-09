@@ -47,6 +47,23 @@ const consulta = require("./functions/consulta");
 const track = require("./functions/track");
 const admin = require("./functions/admin");
 
+// Serve static files FIRST (HTML, CSS, JS, fonts, img etc.)
+// Must come BEFORE SPA fallback so /assets/* resolves correctly
+app.use(express.static(path.join(__dirname), {
+  setHeaders(res, filePath) {
+    if (/\.(js|css|html)$/i.test(filePath)) {
+      res.setHeader("Content-Type", `${getContentType(filePath)}; charset=utf-8`);
+    }
+  }
+}));
+
+function getContentType(filePath) {
+  if (filePath.endsWith(".js")) return "application/javascript";
+  if (filePath.endsWith(".css")) return "text/css";
+  if (filePath.endsWith(".html")) return "text/html";
+  return "application/octet-stream";
+}
+
 // Rastreio (público, sempre 204) e painel (protegido por ADMIN_TOKEN).
 app.all("/api/track", netlifyAdapter(track.handler));
 app.all("/api/track/*", netlifyAdapter(track.handler));
@@ -64,7 +81,7 @@ app.all("/api/consulta.php", netlifyAdapter(consulta.handler));
 // ---------------------------------------------------------------------------
 // PAINEL /admin — build do Vite em admin-dist/ (npm run build:admin)
 //
-// Vem ANTES do static da raiz: senão o fallback de SPA do funil engoliria
+// Vem ANTES do SPA fallback: senão o fallback de SPA do funil engoliria
 // /admin e devolveria o index.html da oferta no lugar do painel.
 // ---------------------------------------------------------------------------
 const ADMIN_DIST = path.join(__dirname, "admin-dist");
@@ -82,23 +99,7 @@ app.get(["/admin", "/admin/*"], (_req, res) => {
   res.sendFile(page);
 });
 
-// Serve static files (HTML, CSS, JS, fonts, img etc.)
-app.use(express.static(path.join(__dirname), {
-  setHeaders(res, filePath) {
-    if (/\.(js|css|html)$/i.test(filePath)) {
-      res.setHeader("Content-Type", `${getContentType(filePath)}; charset=utf-8`);
-    }
-  }
-}));
-
-function getContentType(filePath) {
-  if (filePath.endsWith(".js")) return "application/javascript";
-  if (filePath.endsWith(".css")) return "text/css";
-  if (filePath.endsWith(".html")) return "text/html";
-  return "application/octet-stream";
-}
-
-// SPA fallback — all unknown routes return index.html
+// SPA fallback — all unknown routes return index.html (LAST)
 app.get("*", (_req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
