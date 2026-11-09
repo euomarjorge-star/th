@@ -1,7 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
+  "framework": "nodejs",
   "installCommand": "npm install",
   "env": {
     "PAYMENT_GATEWAY": "zuckpay",
