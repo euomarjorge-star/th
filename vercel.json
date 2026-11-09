@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "framework": "nodejs",
+  "framework": "node",
   "installCommand": "npm install",
   "env": {
     "PAYMENT_GATEWAY": "zuckpay",
