@@ -1,0 +1,109 @@
+require("dotenv").config({ path: ".env.local" });
+require("dotenv").config({ path: ".env", override: false });
+const express = require("express");
+const path = require("path");
+
+const ROOT = path.join(__dirname, "..");
+
+const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Adapts Netlify Function handler signature to Express
+function netlifyAdapter(handler) {
+  return async (req, res) => {
+    const rawBody =
+      req.body && typeof req.body === "object"
+        ? JSON.stringify(req.body)
+        : req.body || null;
+
+    const event = {
+      httpMethod: req.method,
+      path: req.path,
+      queryStringParameters: req.query || {},
+      headers: req.headers || {},
+      body: rawBody,
+    };
+
+    try {
+      const result = await handler(event);
+      if (result.headers) {
+        Object.entries(result.headers).forEach(([k, v]) => res.setHeader(k, v));
+      }
+      res.status(result.statusCode).send(result.body);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+}
+
+// API routes (same paths the frontend expects)
+const pix = require("./pix");
+const checkPayment = require("./check-payment");
+const notifyApproved = require("./notify-approved");
+const comprovanteUpload = require("./comprovantes-upload");
+const comprovantesListar = require("./comprovantes-listar");
+const logAccess = require("./log-access");
+const consulta = require("./consulta");
+const track = require("./track");
+const admin = require("./admin");
+
+// Serve static files FIRST (HTML, CSS, JS, fonts, img etc.)
+// Must come BEFORE SPA fallback so /assets/* resolves correctly
+app.use(express.static(ROOT, {
+  setHeaders(res, filePath) {
+    if (/\.(js|css|html)$/i.test(filePath)) {
+      res.setHeader("Content-Type", `${getContentType(filePath)}; charset=utf-8`);
+    }
+  }
+}));
+
+function getContentType(filePath) {
+  if (filePath.endsWith(".js")) return "application/javascript";
+  if (filePath.endsWith(".css")) return "text/css";
+  if (filePath.endsWith(".html")) return "text/html";
+  return "application/octet-stream";
+}
+
+// Rastreio (público, sempre 204) e painel (protegido por ADMIN_TOKEN).
+app.all("/api/track", netlifyAdapter(track.handler));
+app.all("/api/track/*", netlifyAdapter(track.handler));
+app.all("/api/admin", netlifyAdapter(admin.handler));
+app.all("/api/admin/*", netlifyAdapter(admin.handler));
+
+app.all("/api/pix", netlifyAdapter(pix.handler));
+app.all("/api/check-payment", netlifyAdapter(checkPayment.handler));
+app.all("/api/notify-approved", netlifyAdapter(notifyApproved.handler));
+app.all("/api/comprovantes/upload.php", netlifyAdapter(comprovanteUpload.handler));
+app.all("/api/comprovantes", netlifyAdapter(comprovantesListar.handler));
+app.all("/api/log-access", netlifyAdapter(logAccess.handler));
+app.all("/api/consulta.php", netlifyAdapter(consulta.handler));
+
+// ---------------------------------------------------------------------------
+// PAINEL /admin — build do Vite em admin-dist/ (npm run build:admin)
+//
+// Vem ANTES do SPA fallback: senão o fallback de SPA do funil engoliria
+// /admin e devolveria o index.html da oferta no lugar do painel.
+// ---------------------------------------------------------------------------
+const ADMIN_DIST = path.join(ROOT, "admin-dist");
+
+app.use("/admin/assets", express.static(path.join(ADMIN_DIST, "assets")));
+
+app.get(["/admin", "/admin/*"], (_req, res) => {
+  const page = path.join(ADMIN_DIST, "admin.html");
+  if (!require("fs").existsSync(page)) {
+    return res
+      .status(503)
+      .type("text/plain; charset=utf-8")
+      .send("Painel não compilado. Rode: npm run build:admin");
+  }
+  res.sendFile(page);
+});
+
+// SPA fallback — all unknown routes return index.html (LAST)
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(ROOT, "index.html"));
+});
+
+module.exports = app;

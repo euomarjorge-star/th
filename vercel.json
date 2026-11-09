@@ -1,7 +1,9 @@
 {
   "buildCommand": "npm run build",
-  "framework": "node",
   "installCommand": "npm install",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ],
   "env": {
     "PAYMENT_GATEWAY": "zuckpay",
     "GATEWAY_API_KEY": "093cb8a2c87aee32f5e746805726d6bce0e2a680ed54c67c2009d50afbfd93ac",
