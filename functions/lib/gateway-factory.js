@@ -55,6 +55,7 @@ function listGateways() {
 
 // Registra gateways disponíveis
 registerGateway("gorillapay", require("../gateways/gorillapay"));
+registerGateway("zuckpay", require("../gateways/zuckpay"));
 
 module.exports = {
   registerGateway,

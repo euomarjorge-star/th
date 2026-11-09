@@ -20,6 +20,16 @@
 (function () {
   'use strict';
 
+  /* EM TESTE NÃO MEDE. Rodando em localhost / 127.0.0.1 / rede local, o
+     rastreio inteiro é desligado: nenhuma batida vai para /api/track, para não
+     sujar relatório com navegação de desenvolvimento. Em produção, roda. */
+  var ehTeste = /^(localhost|127\.|0\.0\.0\.0|192\.168\.|10\.|\[?::1)/i
+    .test(location.hostname) || location.hostname === '';
+  if (ehTeste) {
+    console.info('[Tracking] Ambiente de teste — rastreio desativado.');
+    return;
+  }
+
   var API = '/api/track';
   var CHAVE_ATRIB = 'funil.atribuicao';
   var CHAVE_SESSAO = 'funil.sessao';

@@ -76,21 +76,54 @@
 })();
 </script>
 
-<!-- Meta Pixel Code -->
-<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init', '4327697327497010');fbq('init', '1078834241324397');fbq('init', '1527029111971432');fbq('track', 'PageView');</script><noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=4327697327497010&ev=PageView&noscript=1"/></noscript>
-<!-- End Meta Pixel Code -->
-  
-<!-- UTMify Pixel -->
-<script> window.pixelId = "6a2200f2ae65ba8b4e8c85c7"; var a = document.createElement("script"); a.setAttribute("async", ""); a.setAttribute("defer", ""); a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js"); document.head.appendChild(a); </script>
+<!-- ===========================================================================
+     PIXELS (Meta + UTMify)
 
-<!-- UTMify UTMs -->
-<script
-  src="https://cdn.utmify.com.br/scripts/utms/latest.js"
-  data-utmify-prevent-xcod-sck
-  data-utmify-prevent-subids
-  async
-  defer
-></script>
+     Os IDs NÃO ficam mais no código — este repositório é público. Preencha-os
+     em produção definindo window.__PIXELS__ ANTES deste bloco (ex.: um
+     <script> injetado pelo provedor, ou editando localmente sem commitar):
+
+         <script>window.__PIXELS__ = {
+           metaIds: ['SEU_PIXEL_1','SEU_PIXEL_2'],
+           utmifyId: 'SEU_PIXEL_ID_UTMIFY'
+         };</script>
+
+     EM TESTE NÃO DISPARA: em localhost/127.0.0.1/rede local nada é carregado,
+     para não sujar as contas de anúncio com navegação de desenvolvimento.
+     =========================================================================== -->
+<script>
+(function () {
+  var cfg = window.__PIXELS__ || {};
+  var ehTeste = /^(localhost|127\.|0\.0\.0\.0|192\.168\.|10\.|\[?::1)/i
+    .test(location.hostname) || location.hostname === '';
+  if (ehTeste) { console.info('[Pixels] Ambiente de teste — pixels desativados.'); return; }
+
+  // Meta Pixel
+  var metaIds = cfg.metaIds || [];
+  if (metaIds.length) {
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    metaIds.forEach(function (id) { fbq('init', id); });
+    fbq('track', 'PageView');
+  }
+
+  // UTMify Pixel
+  if (cfg.utmifyId) {
+    window.pixelId = cfg.utmifyId;
+    var a = document.createElement('script');
+    a.async = true; a.defer = true;
+    a.src = 'https://cdn.utmify.com.br/scripts/pixel/pixel.js';
+    document.head.appendChild(a);
+  }
+
+  // UTMify UTMs (captura de parâmetros — inofensiva, mas só em produção)
+  var u = document.createElement('script');
+  u.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
+  u.setAttribute('data-utmify-prevent-xcod-sck', '');
+  u.setAttribute('data-utmify-prevent-subids', '');
+  u.async = true; u.defer = true;
+  document.head.appendChild(u);
+})();
+</script>
 
 
            
